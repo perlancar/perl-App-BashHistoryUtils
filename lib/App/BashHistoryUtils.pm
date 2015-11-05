@@ -71,34 +71,44 @@ sub _do {
         }
     }
 
-    local @ARGV = ($histfile);
     my $now = time;
+
+    my $code;
+    if ($which eq 'each') {
+        $code = eval "package main; no strict; sub { $args{code} }";
+        die if $@;
+    } else {
+        $code = sub {
+            if (defined($args{max_age}) &&
+                    $main::TS < $now-$args{max_age}) {
+                $main::PRINT = 0;
+            }
+            if (defined($args{min_age}) &&
+                    $main::TS > $now-$args{min_age}) {
+                $main::PRINT = 0;
+            }
+            if ($pat && $_ =~ $pat) {
+                $main::PRINT = 0;
+            }
+
+            if ($which eq 'grep') {
+                $main::PRINT = !$main::PRINT;
+            }
+            if ($args{invert_match}) {
+                $main::PRINT = !$main::PRINT;
+            }
+        };
+    }
+
+    local @ARGV = ($histfile);
     my $stdout = Capture::Tiny::capture_stdout(
         sub {
-            Bash::History::Read::each_hist(
-                sub {
-                    if (defined($args{max_age}) &&
-                            $main::TS < $now-$args{max_age}) {
-                        $main::PRINT = 0;
-                    }
-                    if (defined($args{min_age}) &&
-                            $main::TS > $now-$args{min_age}) {
-                        $main::PRINT = 0;
-                    }
-                    if ($pat && $_ =~ $pat) {
-                        $main::PRINT = 0;
-                    }
-
-                    if ($which eq 'grep') {
-                        $main::PRINT = !$main::PRINT;
-                    }
-                    if ($args{invert_match}) {
-                        $main::PRINT = !$main::PRINT;
-                    }
-                });
-        });
+            Bash::History::Read::each_hist($code);
+        }
+    );
 
     if ($which eq 'grep' ||
+            $which eq 'each' ||
             $which eq 'delete' && $args{-dry_run}) {
         return [200,"OK", $stdout, {'cmdline.skip_format'=>1}];
     } elsif ($which eq 'delete') {
@@ -144,6 +154,34 @@ $SPEC{delete_bash_history_entries} = {
 };
 sub delete_bash_history_entries {
     _do('delete', @_);
+}
+
+{
+    my $spec = {
+        v => 1.1,
+        summary => 'Run Perl code for each bash history entry',
+        args => {
+            %arg_histfile,
+            %args_filtering,
+            code => {
+                summary => 'Perl code to run for each entry',
+                description => <<'_',
+
+Inside the code, you can set `$PRINT` to 0 to suppress the output of the entry.
+You can modify `$_` to modify the entry. `$TS` (timestamp) is also available.
+
+_
+                schema => 'str*',
+                req => 1,
+                pos => 0,
+            },
+        },
+    };
+    delete $spec->{args}{pattern};
+    $SPEC{each_bash_history_entry} = $spec;
+}
+sub each_bash_history_entry {
+    _do('each', @_);
 }
 
 1;
