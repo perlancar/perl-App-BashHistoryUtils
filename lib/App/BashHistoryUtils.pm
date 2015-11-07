@@ -62,6 +62,10 @@ sub _do {
     my $realhistfile = Cwd::realpath($args{histfile})
         or return [412, "Can't find realpath of '$histfile': $!"];
 
+    if ($which eq 'grep' && !defined($args{pattern})) {
+        return [400, "Missing required argument: pattern"];
+    }
+
     my $pat;
     if (defined $args{pattern}) {
         if ($args{ignore_case}) {
