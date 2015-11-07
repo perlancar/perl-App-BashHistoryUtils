@@ -48,6 +48,14 @@ our %args_filtering = (
     },
 );
 
+our %args_formatting = (
+    strip_timestamp => {
+        summary => 'Strip timestamps',
+        schema => 'bool',
+        tags => ['category:formatting'],
+    },
+);
+
 sub _do {
     require Bash::History::Read;
     require Capture::Tiny;
@@ -101,6 +109,10 @@ sub _do {
             if ($args{invert_match}) {
                 $main::PRINT = !$main::PRINT;
             }
+
+            if ($args{strip_timestamp}) {
+                undef $main::TS;
+            }
         };
     }
 
@@ -139,6 +151,7 @@ $SPEC{grep_bash_history_entries} = {
     args => {
         %arg_histfile,
         %args_filtering,
+        %args_formatting,
     },
 };
 sub grep_bash_history_entries {
@@ -151,6 +164,7 @@ $SPEC{delete_bash_history_entries} = {
     args => {
         %arg_histfile,
         %args_filtering,
+        %args_formatting,
     },
     features => {
         dry_run => 1,
@@ -167,6 +181,7 @@ sub delete_bash_history_entries {
         args => {
             %arg_histfile,
             %args_filtering,
+            %args_formatting,
             code => {
                 summary => 'Perl code to run for each entry',
                 description => <<'_',
