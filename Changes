@@ -1,5 +1,12 @@
 Revision history for App-BashHistoryUtils
 
+0.03    2015-11-07 (PERLANCAR)
+
+	- Add --strip-timestamp option.
+
+	- grep-bash-history-entries: Require pattern argument.
+
+
 0.02    2015-11-05 (PERLANCAR)
 
 	- Add utility: each-bash-history-entry.
