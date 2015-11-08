@@ -60,7 +60,6 @@ sub _do {
     require Bash::History::Read;
     require Capture::Tiny;
     require Cwd;
-    #require File::Temp;
 
     my $which = shift;
     my %args = @_;
@@ -128,7 +127,8 @@ sub _do {
             $which eq 'delete' && $args{-dry_run}) {
         return [200,"OK", $stdout, {'cmdline.skip_format'=>1}];
     } elsif ($which eq 'delete') {
-        my $tempfile = "$realhistfile.tmp.$$";
+        require File::Temp;
+        my ($tempfh, $tempfile) = File::Temp::tempfile(template => "${realhistfile}XXXXXX");
         open my($fh), ">", $tempfile
             or return [500, "Can't open temporary file '$tempfile': $!"];
 
