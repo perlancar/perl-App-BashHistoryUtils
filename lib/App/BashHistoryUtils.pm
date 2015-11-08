@@ -124,7 +124,7 @@ sub _do {
 
     if ($which eq 'grep' ||
             $which eq 'each' ||
-            $which eq 'delete' && $args{-dry_run}) {
+            $which eq 'delete' && ($args{-dry_run} || !$args{inplace})) {
         return [200,"OK", $stdout, {'cmdline.skip_format'=>1}];
     } elsif ($which eq 'delete') {
         require File::Temp;
@@ -138,6 +138,8 @@ sub _do {
         close $fh
             or return [500, "Can't write (2) to temporary file '$tempfile': $!"];
 
+        rename $realhistfile, "$realhistfile~"
+            or warn "Can't move '$realhistfile' to '$realhistfile~': $!";
         rename $tempfile, $realhistfile
             or return [500, "Can't replace temporary file '$tempfile' to '$realhistfile': $!"];
     }
@@ -165,6 +167,10 @@ $SPEC{delete_bash_history_entries} = {
         %arg_histfile,
         %args_filtering,
         %args_formatting,
+        inplace => {
+            summary => 'Replace original bash history file',
+            schema => ['bool', is=>1],
+        },
     },
     features => {
         dry_run => 1,
