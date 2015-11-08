@@ -1,5 +1,13 @@
 Revision history for App-BashHistoryUtils
 
+0.04    2015-11-09 (PERLANCAR)
+
+	- delete: Backup original bash history file & force user to specify
+	  --inplace first for safety.
+
+	- [security] Do not use a predictable name for temporary file.
+
+
 0.03    2015-11-07 (PERLANCAR)
 
 	- Add --strip-timestamp option.
