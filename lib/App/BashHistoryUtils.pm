@@ -29,13 +29,11 @@ our %args_filtering = (
     max_age => {
         summary => 'Match entries older than a certain age',
         schema => 'duration*',
-        'x.perl.coerce_to' => 'int(secs)',
         tags => ['category:filtering'],
     },
     min_age => {
         summary => 'Match entries younger than a certain age',
         schema => 'duration*',
-        'x.perl.coerce_to' => 'int(secs)',
         tags => ['category:filtering'],
     },
     ignore_case => {
